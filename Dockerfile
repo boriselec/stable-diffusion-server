@@ -1,6 +1,7 @@
 FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y \
   git \
+  python-is-python3 \
   wget \
   && rm -rf /var/lib/apt/lists/*
 RUN git clone https://github.com/Stability-AI/stablediffusion /home/stablediffusion \
