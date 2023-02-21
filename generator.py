@@ -23,8 +23,13 @@ def generate_loop(job_queue, curr_rq, startup_args):
                            attention_slicing=False,
                            mask=None)
     while True:
-        job = job_queue.get()
-        curr_rq.value = job.rq
-        args.prompt = job.art_desc
-        pipeline = stablediffusion.stable_diffusion_pipeline(args)
-        stablediffusion.stable_diffusion_inference(pipeline, job.rq)
+        try:
+            job = job_queue.get()
+            curr_rq.value = job.rq
+            args.prompt = job.art_desc
+            pipeline = stablediffusion.stable_diffusion_pipeline(args)
+            stablediffusion.stable_diffusion_inference(pipeline, job.rq)
+        except Exception as e:
+            print(e, flush=True)
+            pass
+        curr_rq.value = None
