@@ -68,7 +68,7 @@ class GenerationServer(BaseHTTPRequestHandler):
     def send_in_progress(self, queue_pos):
         self.send_header("Content-type", "text")
         self.end_headers()
-        self.wfile.write(bytes('Queue position: %x' % queue_pos, "utf-8"))
+        self.wfile.write(bytes('Queue position: %d' % queue_pos, "utf-8"))
 
 
 def parse_args():
