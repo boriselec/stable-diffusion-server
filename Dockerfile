@@ -4,6 +4,6 @@ COPY server.py /usr/local/bin
 COPY stablediffusion.py /usr/local/bin
 COPY generator.py /usr/local/bin
 
-EXPOSE 8080
+EXPOSE 8081
 
 ENTRYPOINT [ "python3", "/usr/local/bin/server.py" ]
