@@ -10,7 +10,7 @@ from types import SimpleNamespace
 import generator
 
 hostName = "0.0.0.0"
-serverPort = 8080
+serverPort = 8081
 
 
 class GenerationServer(BaseHTTPRequestHandler):
