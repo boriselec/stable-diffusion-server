@@ -126,10 +126,10 @@ def stable_diffusion_pipeline(p):
     return p
 
 
-def stable_diffusion_inference(p, rq_id):
+def stable_diffusion_inference(p):
     result = p.pipeline(**remove_unused_args(p))
     img = result.images[0]
-    img_path = os.path.join("output", "%s.png" % rq_id)
+    img_path = os.path.join("output", "current.png")
     img.save(img_path)
 
     print("completed pipeline:", iso_date_time(), flush=True)
