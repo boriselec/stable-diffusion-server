@@ -5,9 +5,8 @@ import stablediffusion
 
 
 def generate_loop(job_queue, curr_rq, startup_args):
-    pipeline = None
-    args = None
     while True:
+        pipeline = None
         args = SimpleNamespace(device=startup_args.device,
                                model=startup_args.model,
                                half=startup_args.half,
