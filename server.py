@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 import argparse
-import hashlib
-import threading
-from functools import partial
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from queue import Queue
-from types import SimpleNamespace
 
 import generator
 
@@ -14,61 +9,23 @@ serverPort = 8081
 
 
 class GenerationServer(BaseHTTPRequestHandler):
-    def __init__(self, job_queue, curr_rq, *args, **kwargs):
-        self.job_queue = job_queue
-        self.curr_rq = curr_rq
-        super().__init__(*args, **kwargs)
-
     def do_POST(self):
         if self.path.startswith('/generate'):
             self.send_response(200)
 
             content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length).decode('utf-8')
-            data = post_data.split(';')
+            data = self.rfile.read(content_length).decode('utf-8')
 
-            m = hashlib.sha256()
-            m.update(''.join(data).encode())
+            generator.generate(data, startup_args)
 
-            rq_id = m.hexdigest()
-            art_desc = data[0]
-            thing_desc = data[1]
-
-            print("rq_id: %s\nart_desc: %s\nthing_desc: %s" % (rq_id, art_desc, thing_desc), flush=True)
-
-            try:
-                self.send_image(rq_id)
-            except OSError:
-                queue_pos = self.queue_pos(rq_id)
-                if queue_pos is None:
-                    job = SimpleNamespace(rq=rq_id, art_desc=art_desc, thing_desc=thing_desc)
-                    self.job_queue.put(job)
-                    queue_pos = self.job_queue.qsize()
-                self.send_in_progress(queue_pos)
+            f = open('output/current.png', 'rb')
+            self.send_header("Content-type", "image/png")
+            self.end_headers()
+            self.wfile.write(f.read())
+            f.close()
 
         else:
             self.send_error(404, 'Not found')
-
-    def queue_pos(self, rq_id):
-        if self.curr_rq.value == rq_id:
-            return 0
-        else:
-            for idx, job in enumerate(self.job_queue.queue):
-                if job.rq == rq_id:
-                    return idx + 1
-            return None
-
-    def send_image(self, rq_id):
-        f = open('output/%s.png' % rq_id, 'rb')
-        self.send_header("Content-type", "image/png")
-        self.end_headers()
-        self.wfile.write(f.read())
-        f.close()
-
-    def send_in_progress(self, queue_pos):
-        self.send_header("Content-type", "text")
-        self.end_headers()
-        self.wfile.write(bytes('Queue position: %d' % queue_pos, "utf-8"))
 
 
 def parse_args():
@@ -93,7 +50,7 @@ def parse_args():
         "--model",
         type=str,
         nargs="?",
-        default="CompVis/stable-diffusion-v1-4",
+        default="dreamlike-art/dreamlike-diffusion-1.0",
         help="The model used to render images",
     )
     parser.add_argument(
@@ -110,15 +67,8 @@ def parse_args():
 
 if __name__ == "__main__":
     startup_args = parse_args()
-
-    queue = Queue()
-    curr_rq_holder = SimpleNamespace(value=None)
-
-    handler = partial(GenerationServer, queue, curr_rq_holder)
-    webServer = HTTPServer((hostName, serverPort), handler)
+    webServer = HTTPServer((hostName, serverPort), GenerationServer)
     print("Server started http://%s:%s\n" % (hostName, serverPort), flush=True)
-
-    threading.Thread(target=generator.generate_loop, args=[queue, curr_rq_holder, startup_args]).start()
 
     try:
         webServer.serve_forever()
