@@ -1,8 +1,6 @@
-FROM ghcr.io/fboulnois/stable-diffusion-docker:1.31.0
+FROM ghcr.io/boriselec/stable-diffusion-docker:init
 
 COPY server.py /usr/local/bin
-COPY stablediffusion.py /usr/local/bin
-COPY generator.py /usr/local/bin
 
 EXPOSE 8081
 
