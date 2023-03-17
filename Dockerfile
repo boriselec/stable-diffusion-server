@@ -1,4 +1,4 @@
-FROM ghcr.io/boriselec/stable-diffusion-docker:init
+FROM ghcr.io/boriselec/stable-diffusion-docker:main_fork
 
 COPY server.py /usr/local/bin
 
