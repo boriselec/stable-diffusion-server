@@ -1,4 +1,4 @@
-FROM ghcr.io/boriselec/stable-diffusion-docker@sha256:f9f81f8f4c0205f5fac0f2240c39bc86a8f5ffd56cf7ad6fc4a4dac0d62481c0
+FROM ghcr.io/boriselec/stable-diffusion-docker@sha256:dd08f3388c8150c7512918b68d173910f133570cc75db829a3cf3cd3c5d1cdc1
 
 COPY server.py /usr/local/bin
 
