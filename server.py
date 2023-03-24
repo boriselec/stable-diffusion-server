@@ -18,8 +18,6 @@ class GenerationServer(BaseHTTPRequestHandler):
         if self.path.startswith('/generate'):
             if self.lock.acquire(blocking=False):
                 try:
-                    self.send_response(200)
-
                     content_length = int(self.headers['Content-Length'])
                     data = self.rfile.read(content_length).decode('utf-8')
                     args = copy.deepcopy(startup_args)
@@ -36,6 +34,11 @@ class GenerationServer(BaseHTTPRequestHandler):
 
                     for img_path in img_paths:
                         os.remove(img_path)
+
+                    self.send_response(200)
+                except RuntimeError as e:
+                    print(e, flush=True)
+                    self.send_error(500)
                 finally:
                     self.lock.release()
             else:
