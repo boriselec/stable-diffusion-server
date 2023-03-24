@@ -20,10 +20,9 @@ class GenerationServer(BaseHTTPRequestHandler):
                 try:
                     content_length = int(self.headers['Content-Length'])
                     data = self.rfile.read(content_length).decode('utf-8')
-                    args = copy.deepcopy(startup_args)
+                    args = copy.deepcopy(inference_args)
                     args.prompt = data
 
-                    pipeline = generator.stable_diffusion_pipeline(args)
                     img_paths = generator.stable_diffusion_inference(pipeline)
 
                     f = open(img_paths[0], 'rb')
@@ -50,6 +49,8 @@ class GenerationServer(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     startup_args = generator.parse_args()
+    pipeline = generator.stable_diffusion_pipeline(startup_args)
+    inference_args = generator.remove_unused_args(startup_args)
     webServer = HTTPServer((hostName, serverPort), GenerationServer)
     print("Server started http://%s:%s\n" % (hostName, serverPort), flush=True)
 
