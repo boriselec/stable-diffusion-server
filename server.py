@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import copy
 import importlib
 import logging
 import os
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from types import SimpleNamespace
 
 generator = importlib.import_module("docker-entrypoint")
 
@@ -21,13 +21,25 @@ class GenerationServer(BaseHTTPRequestHandler):
                 try:
                     content_length = int(self.headers['Content-Length'])
                     data = self.rfile.read(content_length).decode('utf-8')
-                    args = copy.deepcopy(startup_args)
-                    args.prompt = data
 
-                    print("pipeline initialization..", flush=True)
-                    pipeline = generator.stable_diffusion_pipeline(args)
                     print("inference..", flush=True)
-                    img_paths = generator.stable_diffusion_inference(pipeline)
+                    args = SimpleNamespace(
+                        prompt=data,
+                        height=startup_args.height,
+                        width=startup_args.width,
+                        strength=startup_args.strength,
+                        steps=startup_args.steps,
+                        samples=startup_args.samples,
+                        scale=startup_args.scale,
+                        negative_prompt=None,
+                        image=None,
+                        mask=None,
+                        image_scale=None,
+                        pipeline=pipeline,
+                        iters=startup_args.iters,
+                        seed=startup_args.seed,
+                        generator=generator)
+                    img_paths = generator.stable_diffusion_inference(args)
                     print("inference done", flush=True)
 
                     f = open(img_paths[0], 'rb')
@@ -54,6 +66,10 @@ class GenerationServer(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     startup_args = generator.parse_args()
+    p = generator.stable_diffusion_pipeline(startup_args)
+    pipeline = p.pipeline
+    generator = p.generator
+
     webServer = HTTPServer((hostName, serverPort), GenerationServer)
     print("Server started http://%s:%s\n" % (hostName, serverPort), flush=True)
 
