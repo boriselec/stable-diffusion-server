@@ -26,6 +26,13 @@ class GenerationServer(BaseHTTPRequestHandler):
                         height=startup_args.height,
                         width=startup_args.width,
                         strength=startup_args.strength,
+                        steps=startup_args.steps,
+                        samples=startup_args.samples,
+                        scale=startup_args.scale,
+                        negative_prompt=None,
+                        image=None,
+                        mask=None,
+                        image_scale=None,
                         generator=generator)
 
                     img_paths = stable_diffusion.stable_diffusion_inference(pipeline, args)
