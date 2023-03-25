@@ -24,8 +24,11 @@ class GenerationServer(BaseHTTPRequestHandler):
                     args = copy.deepcopy(startup_args)
                     args.prompt = data
 
+                    print("pipeline initialization..", flush=True)
                     pipeline = generator.stable_diffusion_pipeline(args)
+                    print("inference..", flush=True)
                     img_paths = generator.stable_diffusion_inference(pipeline)
+                    print("inference done", flush=True)
 
                     f = open(img_paths[0], 'rb')
                     self.send_response(200)
