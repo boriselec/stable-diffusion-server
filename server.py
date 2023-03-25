@@ -4,8 +4,9 @@ import importlib
 import os
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from types import SimpleNamespace
 
-generator = importlib.import_module("docker-entrypoint")
+stable_diffusion = importlib.import_module("docker-entrypoint")
 
 hostName = "0.0.0.0"
 serverPort = 8081
@@ -20,10 +21,14 @@ class GenerationServer(BaseHTTPRequestHandler):
                 try:
                     content_length = int(self.headers['Content-Length'])
                     data = self.rfile.read(content_length).decode('utf-8')
-                    args = copy.deepcopy(inference_args)
-                    args.prompt = data
+                    args = SimpleNamespace(
+                        prompt=data,
+                        height=startup_args.height,
+                        width=startup_args.width,
+                        strength=startup_args.strength,
+                        generator=generator)
 
-                    img_paths = generator.stable_diffusion_inference(pipeline)
+                    img_paths = stable_diffusion.stable_diffusion_inference(pipeline, args)
 
                     f = open(img_paths[0], 'rb')
                     self.send_header("Content-type", "image/png")
@@ -48,9 +53,8 @@ class GenerationServer(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    startup_args = generator.parse_args()
-    pipeline = generator.stable_diffusion_pipeline(startup_args)
-    inference_args = generator.remove_unused_args(startup_args)
+    startup_args = stable_diffusion.parse_args()
+    pipeline, generator = stable_diffusion.stable_diffusion_pipeline(startup_args)
     webServer = HTTPServer((hostName, serverPort), GenerationServer)
     print("Server started http://%s:%s\n" % (hostName, serverPort), flush=True)
 
