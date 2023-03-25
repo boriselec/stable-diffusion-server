@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import copy
 import importlib
+import logging
 import os
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -27,6 +28,7 @@ class GenerationServer(BaseHTTPRequestHandler):
                     img_paths = generator.stable_diffusion_inference(pipeline)
 
                     f = open(img_paths[0], 'rb')
+                    self.send_response(200)
                     self.send_header("Content-type", "image/png")
                     self.end_headers()
                     self.wfile.write(f.read())
@@ -35,9 +37,8 @@ class GenerationServer(BaseHTTPRequestHandler):
                     for img_path in img_paths:
                         os.remove(img_path)
 
-                    self.send_response(200)
-                except RuntimeError as e:
-                    print(e, flush=True)
+                except RuntimeError:
+                    logging.exception("Error processing request")
                     self.send_error(500)
                 finally:
                     self.lock.release()
