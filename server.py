@@ -6,7 +6,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from types import SimpleNamespace
 
-generator = importlib.import_module("docker-entrypoint")
+stable_diffusion = importlib.import_module("docker-entrypoint")
 
 hostName = "0.0.0.0"
 serverPort = 8081
@@ -39,7 +39,7 @@ class GenerationServer(BaseHTTPRequestHandler):
                         iters=startup_args.iters,
                         seed=startup_args.seed,
                         generator=generator)
-                    img_paths = generator.stable_diffusion_inference(args)
+                    img_paths = stable_diffusion.stable_diffusion_inference(args)
                     print("inference done", flush=True)
 
                     f = open(img_paths[0], 'rb')
@@ -65,8 +65,8 @@ class GenerationServer(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    startup_args = generator.parse_args()
-    p = generator.stable_diffusion_pipeline(startup_args)
+    startup_args = stable_diffusion.parse_args()
+    p = stable_diffusion.stable_diffusion_pipeline(startup_args)
     pipeline = p.pipeline
     generator = p.generator
 
